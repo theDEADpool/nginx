@@ -27,7 +27,9 @@ ngx_preinit_modules(void)
 {
     ngx_uint_t  i;
 
-	//ngx_module_names的数组是通过编译写入到objs/ngx_module.c文件中
+	/*
+	 *ngx_module_names的数组是通过编译写入到objs/ngx_module.c文件中
+	 */
     for (i = 0; ngx_modules[i]; i++) {
         ngx_modules[i]->index = i;
         ngx_modules[i]->name = ngx_module_names[i];

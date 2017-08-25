@@ -67,7 +67,6 @@ ngx_conf_param(ngx_conf_t *cf)
     ngx_buf_t         b;
     ngx_conf_file_t   conf_file;
 
-	/*conf_param是启动nginx通过-g参数指定的各种配置*/
     param = &cf->cycle->conf_param;
 
     if (param->len == 0) {
