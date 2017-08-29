@@ -39,3 +39,25 @@ nginx代码在configure过程中会在objs/目录下生成ngx_modules.c中定义
 
 ----------
 
+在完成配置解析之后，对于`NGX_CORE_MODULE`还会调用模块自定义的`init_conf`函数，对配置文件中没有配置的配置项分配默认值。
+
+------
+
+```
+ngx_init_modules
+```
+
+调用每个模块的`init_module`函数，但nginx中大部分模块是没有定义`init_module`函数的。
+
+------
+
+nginx支持单进程和父子进程两种模式。
+
+```
+ngx_single_process_cycle
+ngx_master_process_cycle
+```
+
+单进程模式通过调用`ngx_process_events_and_timers`函数来执行具体的功能操作。
+
+父子进程模式，父进程通过
