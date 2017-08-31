@@ -60,4 +60,6 @@ ngx_master_process_cycle
 
 单进程模式通过调用`ngx_process_events_and_timers`函数来执行具体的功能操作。
 
-父子进程模式，父进程通过
+父子进程模式，父进程通过`ngx_reap_children`函数来监控子进程，当有子进程意外结束的时候，会重新启动该子进程。
+
+子进程则是工作进程，用来处理响应的业务逻辑。
