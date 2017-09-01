@@ -120,3 +120,13 @@ for (i = 0; cycle->modules[i]; i++) {
 ![ngx-配置解析-1](.\ngx-配置解析-1.bmp)
 
 上图就展示了http模块及子模块之间的数据结构关系。需要说明的是，`**main_conf`、`**srv_conf`和`loc_conf`都是指针数组，指向的都是http子模块对应类型的配置项内存。http子模块每个配置通过`NGX_HTTP_MAIN_CONF_OFFSET`、`NGX_HTTP_SRV_CONF_OFFSET`、`NGX_HTTP_LOC_CONF_OFFSET`来决定每个配置存放在`**main_conf`、`**srv_conf`还是`loc_conf`。
+
+`ngx_http_block`函数也会调用`ngx_conf_parse`函数，所有http子模块的配置解析都是在此处完成。
+
+------
+
+从配置文件中，不同`NGX_CORE_MODULE`配置项格式的不同，导致存在上面两种不同的配置解析过程。
+
+对于`worker_processes`这类配置项，没有任何的前缀标识，因此`ngx_core_module`需要通过`create_conf`函数来完成配置项内存的申请和初始化。
+
+而对于`keepalive_timeout`这类配置项，实际解析的过程，会先解析到外层的`http { }`，这时候就会触发调用`ngx_http_block`函数，完成内存的申请及其他操作。
