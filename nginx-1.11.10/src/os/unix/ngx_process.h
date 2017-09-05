@@ -46,8 +46,10 @@ typedef struct {
 
 #define NGX_MAX_PROCESSES         1024
 
+/*子进程退出时,父进程不会再次创建*/
 #define NGX_PROCESS_NORESPAWN     -1
 #define NGX_PROCESS_JUST_SPAWN    -2
+/*子进程异常退出时,master会重新创建它*/
 #define NGX_PROCESS_RESPAWN       -3
 #define NGX_PROCESS_JUST_RESPAWN  -4
 #define NGX_PROCESS_DETACHED      -5

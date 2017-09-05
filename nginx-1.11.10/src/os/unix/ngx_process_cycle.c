@@ -85,6 +85,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
     ngx_core_conf_t   *ccf;
 
     sigemptyset(&set);
+	/*子进程结束之后通过该信号通知父进程*/
     sigaddset(&set, SIGCHLD);
     sigaddset(&set, SIGALRM);
     sigaddset(&set, SIGIO);
