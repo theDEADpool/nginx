@@ -138,6 +138,7 @@ ngx_event_accept(ngx_event_t *ev)
         (void) ngx_atomic_fetch_add(ngx_stat_accepted, 1);
 #endif
 
+		/*ngx_accept_disabled用于负载均衡*/
         ngx_accept_disabled = ngx_cycle->connection_n / 8
                               - ngx_cycle->free_connection_n;
 
@@ -296,6 +297,8 @@ ngx_event_accept(ngx_event_t *ev)
         }
 #endif
 
+		/*这里实际调用了ngx_epoll_add_connection，注册epoll事件*/
+		/*这里注册的epoll事件是建连成功之后，用来接收和发送数据的*/
         if (ngx_add_conn && (ngx_event_flags & NGX_USE_EPOLL_EVENT) == 0) {
             if (ngx_add_conn(c) == NGX_ERROR) {
                 ngx_close_accepted_connection(c);

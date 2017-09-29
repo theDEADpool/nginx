@@ -715,6 +715,7 @@ ngx_event_process_init(ngx_cycle_t *cycle)
     i = cycle->connection_n;
     next = NULL;
 
+	/*将connection连接成一个单向链表，同时将connection和读写事件进行关联*/
     do {
         i--;
 

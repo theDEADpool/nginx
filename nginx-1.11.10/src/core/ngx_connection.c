@@ -404,6 +404,7 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
         ls = cycle->listening.elts;
         for (i = 0; i < cycle->listening.nelts; i++) {
 
+			/*如果是继承的socket，ignore就会为true*/
             if (ls[i].ignore) {
                 continue;
             }
@@ -433,6 +434,7 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
             }
 #endif
 
+			/*在ngx_create_listening中对fd赋值为-1*/
             if (ls[i].fd != (ngx_socket_t) -1) {
                 continue;
             }
@@ -446,6 +448,8 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
                 continue;
             }
 
+			/*ngx在配置解析的过程中由各模块将需要监听的端口统一存放在cycle->listening->elts中*/
+			/*然后再统一调用socket函数创建socket*/
             s = ngx_socket(ls[i].sockaddr->sa_family, ls[i].type, 0);
 
             if (s == (ngx_socket_t) -1) {
@@ -1058,6 +1062,7 @@ ngx_get_connection(ngx_socket_t s, ngx_log_t *log)
         return NULL;
     }
 
+	/*每get一个空闲连接free_connection之后，都将free_connection指向下一个空闲连接*/
     ngx_cycle->free_connections = c->data;
     ngx_cycle->free_connection_n--;
 

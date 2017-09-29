@@ -119,6 +119,8 @@ typedef enum {
 
 
 struct ngx_connection_s {
+	/*整个connection是一个单向链表，data字段就是指向下一个connection，在ngx_event_process_init赋值*/
+	/*当某个connection被使用，data字段会被重新赋值*/
     void               *data;
     ngx_event_t        *read;
     ngx_event_t        *write;

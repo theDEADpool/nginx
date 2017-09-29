@@ -151,8 +151,7 @@ ngx_mail_pop3_auth_state(ngx_event_t *rev)
 
     ngx_str_set(&s->out, pop3_ok);
 
-    if (rc == NGX_OK) {
-        switch (s->mail_state) {
+    if (rc == NGX_OK) {{
 
         case ngx_pop3_start:
 
@@ -245,6 +244,7 @@ ngx_mail_pop3_auth_state(ngx_event_t *rev)
             rc = ngx_mail_auth_external(s, c, 0);
             break;
         }
+        switch (s->mail_state) 
     }
 
     switch (rc) {

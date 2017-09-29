@@ -194,7 +194,7 @@ ngx_http_header_t  ngx_http_headers_in[] = {
     { ngx_null_string, 0, NULL }
 };
 
-
+/*通过ngx_event_accept，调用该函数，传入参数c是空闲连接free_connection*/
 void
 ngx_http_init_connection(ngx_connection_t *c)
 {

@@ -900,7 +900,9 @@ ngx_mail_proxy_handler(ngx_event_t *ev)
     }
 
     if (c == s->connection) {
+		/*收到下游连接上的事件*/
         if (ev->write) {
+			/*下游可写，则将收到的上游消息发送给下游*/
             recv_action = "proxying and reading from upstream";
             send_action = "proxying and sending to client";
             src = s->proxy->upstream.connection;
@@ -908,6 +910,7 @@ ngx_mail_proxy_handler(ngx_event_t *ev)
             b = s->proxy->buffer;
 
         } else {
+			/*下游可读，则从下游读取消息并缓存，等待发送给上游*/
             recv_action = "proxying and reading from client";
             send_action = "proxying and sending to upstream";
             src = c;
@@ -916,6 +919,7 @@ ngx_mail_proxy_handler(ngx_event_t *ev)
         }
 
     } else {
+		/*收到上游连接上的事件*/
         if (ev->write) {
             recv_action = "proxying and reading from client";
             send_action = "proxying and sending to upstream";
