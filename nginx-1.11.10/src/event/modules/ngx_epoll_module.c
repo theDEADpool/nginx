@@ -369,6 +369,7 @@ ngx_epoll_init(ngx_cycle_t *cycle, ngx_msec_t timer)
     ngx_event_actions = ngx_epoll_module_ctx.actions;
 
 #if (NGX_HAVE_CLEAR_EVENT)
+	/*nginx默认使用ET模式的epoll*/
     ngx_event_flags = NGX_USE_CLEAR_EVENT
 #else
     ngx_event_flags = NGX_USE_LEVEL_EVENT
@@ -604,6 +605,7 @@ ngx_epoll_add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
     }
 
     if (e->active) {
+		/*e->active == true表示为活跃时间，因此将新的epoll事件类型添加而不是替换原有的*/
         op = EPOLL_CTL_MOD;
         events |= prev;
 
@@ -618,6 +620,9 @@ ngx_epoll_add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
 #endif
 
     ee.events = events | (uint32_t) flags;
+	/*将地址的最后一位用做instance标识，用来判断事件是否过期*/
+	/*instance的作用是防止，在某个事件被执行之前，该事件对应的fd被释放，然后又被重新申请分配*/
+	/*这种场景下根据fd是无法判断事件是否过期，才需要instance标识*/
     ee.data.ptr = (void *) ((uintptr_t) c | ev->instance);
 
     ngx_log_debug3(NGX_LOG_DEBUG_EVENT, ev->log, 0,
@@ -836,7 +841,10 @@ ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
     for (i = 0; i < events; i++) {
         c = event_list[i].data.ptr;
 
+		/*地址最后一位在ngx_epoll_add_event函数中做过特殊处理，是一个标识*/
+		/*取出内存地址的最后1位*/
         instance = (uintptr_t) c & 1;
+		/*不论是32位还是64位机器，内存地址最后1位都是0，所以还原最后1位为0*/
         c = (ngx_connection_t *) ((uintptr_t) c & (uintptr_t) ~1);
 
         rev = c->read;
@@ -893,6 +901,7 @@ ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
             rev->ready = 1;
 
             if (flags & NGX_POST_EVENTS) {
+				/*带有POST标识的事件需要延后处理*/
                 queue = rev->accept ? &ngx_posted_accept_events
                                     : &ngx_posted_events;
 
