@@ -139,6 +139,7 @@ ngx_http_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
+	/*这里实际上就是将保存http配置的内存地址加入到了conf_ctx所指向的数组中*/
     *(ngx_http_conf_ctx_t **) conf = ctx;
 
 
@@ -214,6 +215,7 @@ ngx_http_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     pcf = *cf;
+	/*原本cf->ctx = cycle->conf_ctx*/
     cf->ctx = ctx;
 
     for (m = 0; cf->cycle->modules[m]; m++) {
@@ -231,7 +233,7 @@ ngx_http_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     /* parse inside the http{} block */
-
+	/*开始解析所有http模块的配置*/
     cf->module_type = NGX_HTTP_MODULE;
     cf->cmd_type = NGX_HTTP_MAIN_CONF;
     rv = ngx_conf_parse(cf, NULL);
@@ -257,7 +259,7 @@ ngx_http_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         mi = cf->cycle->modules[m]->ctx_index;
 
         /* init http{} main_conf's */
-
+		/*对配置文件中没有指定的main_conf配置设置默认值*/
         if (module->init_main_conf) {
             rv = module->init_main_conf(cf, ctx->main_conf[mi]);
             if (rv != NGX_CONF_OK) {
@@ -265,6 +267,7 @@ ngx_http_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             }
         }
 
+		/*merge的作用对server中没有配置的配置项设为默认值*/
         rv = ngx_http_merge_servers(cf, cmcf, module, mi);
         if (rv != NGX_CONF_OK) {
             goto failed;

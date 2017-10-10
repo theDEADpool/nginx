@@ -2909,6 +2909,7 @@ ngx_http_core_server(ngx_conf_t *cf, ngx_command_t *cmd, void *dummy)
         return NGX_CONF_ERROR;
     }
 
+	/*cf->ctx是在ngx_http_block中申请的用于保存http模块配置项的内存*/	
     http_ctx = cf->ctx;
     ctx->main_conf = http_ctx->main_conf;
 
