@@ -607,7 +607,7 @@ ngx_http_merge_servers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
             /* merge the locations{}' loc_conf's */
 
             clcf = cscfp[s]->ctx->loc_conf[ngx_http_core_module.ctx_index];
-
+			/*clcf->locationsj就是将当前server下所有location块配置项关联起来的链表*/
             rv = ngx_http_merge_locations(cf, clcf->locations,
                                           cscfp[s]->ctx->loc_conf,
                                           module, ctx_index);

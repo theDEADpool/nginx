@@ -465,6 +465,7 @@ struct ngx_http_core_loc_conf_s {
 
 typedef struct {
     ngx_queue_t                      queue;
+	/*exact和inclusive都指向loc配置，exact是精确匹配*/
     ngx_http_core_loc_conf_t        *exact;
     ngx_http_core_loc_conf_t        *inclusive;
     ngx_str_t                       *name;
