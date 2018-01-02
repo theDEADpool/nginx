@@ -8,7 +8,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 
-
+// spin参数表示在多处理器系统中，当前进程等待其他CPU释放锁的时间
 void
 ngx_spinlock(ngx_atomic_t *lock, ngx_atomic_int_t value, ngx_uint_t spin)
 {
@@ -37,6 +37,7 @@ ngx_spinlock(ngx_atomic_t *lock, ngx_atomic_int_t value, ngx_uint_t spin)
             }
         }
 
+		// 当前进程让出CPU
         ngx_sched_yield();
     }
 

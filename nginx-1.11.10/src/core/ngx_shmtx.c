@@ -30,6 +30,7 @@ ngx_shmtx_create(ngx_shmtx_t *mtx, ngx_shmtx_sh_t *addr, u_char *name)
 
     mtx->wait = &addr->wait;
 
+	// 第二个入参1表示信号量用于进程同步，0表示信号量用于线程同步
     if (sem_init(&mtx->sem, 1, 0) == -1) {
         ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, ngx_errno,
                       "sem_init() failed");

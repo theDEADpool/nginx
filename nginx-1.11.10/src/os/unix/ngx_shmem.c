@@ -10,7 +10,7 @@
 
 
 #if (NGX_HAVE_MAP_ANON)
-
+//MAP_ANON表示不使用文件映射，数据都保存在内存中
 ngx_int_t
 ngx_shm_alloc(ngx_shm_t *shm)
 {
