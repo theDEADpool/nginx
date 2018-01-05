@@ -512,7 +512,9 @@ ngx_event_module_init(ngx_cycle_t *cycle)
     shared = shm.addr;
 
     ngx_accept_mutex_ptr = (ngx_atomic_t *) shared;
-	//ngx_accept_mutex负载均衡锁，spin=-1锁不会让进程进入睡眠
+	//ngx_accept_mutex负载均衡锁
+	// spin设置为-1，则不管当前系统是否支持信号量，该锁都不会使用信号量
+	// 也就意味着该锁一定不会让进程进入休眠状态
     ngx_accept_mutex.spin = (ngx_uint_t) -1;
 
     if (ngx_shmtx_create(&ngx_accept_mutex, (ngx_shmtx_sh_t *) shared,

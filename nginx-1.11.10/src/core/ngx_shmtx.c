@@ -81,7 +81,9 @@ ngx_shmtx_lock(ngx_shmtx_t *mtx)
         }
 
         if (ngx_ncpu > 1) {
-
+			// 对于多个CPU，先看当前CPU在mtx->spin这个时间范围内，能不能获取到锁
+			// 如果能获取到锁，则直接返回，不能获取到锁，再进入信号量的处理（如果系统支持信号量的话）
+			// 如果系统不支持信号量，在规定时间内又没有获取到锁，则当前进程把CPU让出，进入休眠
             for (n = 1; n < mtx->spin; n <<= 1) {
 
                 for (i = 0; i < n; i++) {
@@ -199,13 +201,14 @@ ngx_shmtx_wakeup(ngx_shmtx_t *mtx)
 
 #else
 
-
+// 使用文件锁来达到互斥锁的目的
 ngx_int_t
 ngx_shmtx_create(ngx_shmtx_t *mtx, ngx_shmtx_sh_t *addr, u_char *name)
 {
     if (mtx->name) {
 
         if (ngx_strcmp(name, mtx->name) == 0) {
+			// 名称相同表示锁已经被创建过，所以不再重复创建
             mtx->name = name;
             return NGX_OK;
         }
@@ -222,6 +225,7 @@ ngx_shmtx_create(ngx_shmtx_t *mtx, ngx_shmtx_sh_t *addr, u_char *name)
         return NGX_ERROR;
     }
 
+	// 文件锁并不需要具体的文件，只需要文件对应的fd就可以
     if (ngx_delete_file(name) == NGX_FILE_ERROR) {
         ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, ngx_errno,
                       ngx_delete_file_n " \"%s\" failed", name);
