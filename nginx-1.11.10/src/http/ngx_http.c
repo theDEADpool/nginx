@@ -657,6 +657,7 @@ ngx_http_merge_locations(ngx_conf_t *cf, ngx_queue_t *locations,
             return rv;
         }
 
+		// location配置块中可能还嵌套有location块，所以要继续合并
         rv = ngx_http_merge_locations(cf, clcf->locations, clcf->loc_conf,
                                       module, ctx_index);
         if (rv != NGX_CONF_OK) {

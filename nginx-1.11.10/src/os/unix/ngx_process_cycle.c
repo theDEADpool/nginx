@@ -168,6 +168,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
         ngx_log_debug1(NGX_LOG_DEBUG_EVENT, cycle->log, 0,
                        "wake up, sigio %i", sigio);
 
+		// 当有子进程异常退出，内核会发送CHLD信号，ngx_signal_handler函数将该变量设置为1
         if (ngx_reap) {
             ngx_reap = 0;
             ngx_log_debug0(NGX_LOG_DEBUG_EVENT, cycle->log, 0, "reap children");
@@ -584,6 +585,7 @@ ngx_reap_children(ngx_cycle_t *cycle)
             continue;
         }
 
+		// 找到退出的子进程
         if (ngx_processes[i].exited) {
 
             if (!ngx_processes[i].detached) {
