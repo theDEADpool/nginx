@@ -28,6 +28,7 @@ typedef struct {
 
 
 struct ngx_event_s {
+	/* 在ngx_get_connection中，data字段被设置当前连接的数据结构ngx_connection_t */
     void            *data;
 
     unsigned         write:1;
@@ -46,6 +47,7 @@ struct ngx_event_s {
     unsigned         disabled:1;
 
     /* the ready event; in aio mode 0 means that no operation can be posted */
+	/* 当连接上有可读数据的时候，该标志位会被设置为1，ngx_epoll_process_events */
     unsigned         ready:1;
 
     unsigned         oneshot:1;

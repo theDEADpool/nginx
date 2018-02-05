@@ -299,6 +299,7 @@ typedef struct {
 typedef struct ngx_http_addr_conf_s  ngx_http_addr_conf_t;
 
 typedef struct {
+	/* addr_conf指向收到请求的监听端口对应的配置项 */
     ngx_http_addr_conf_t             *addr_conf;
     ngx_http_conf_ctx_t              *conf_ctx;
 
