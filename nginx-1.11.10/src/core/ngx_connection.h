@@ -37,6 +37,7 @@ struct ngx_listening_s {
     /* handler of accepted connection */
     ngx_connection_handler_pt   handler;
 
+	/* HTTP模块中server表示当前端口对应的所有监听地址，每个地址都包含了所对应的server配置 */
     void               *servers;  /* array of ngx_http_in_addr_t, for example */
 
     ngx_log_t           log;
@@ -46,6 +47,7 @@ struct ngx_listening_s {
     /* should be here because of the AcceptEx() preread */
     size_t              post_accept_buffer_size;
     /* should be here because of the deferred accept */
+	/* 如果建连成功之后在post_accept_timeout时间内都没有收到用户数据，则通知内核丢弃该连接 */
     ngx_msec_t          post_accept_timeout;
 
     ngx_listening_t    *previous;
@@ -121,7 +123,7 @@ typedef enum {
 struct ngx_connection_s {
 	/* 整个connection是一个单向链表，data字段就是指向下一个connection，在ngx_event_process_init赋值 */
 	/* 当某一个connection被实用，在ngx_http_init_connection中data字段会被重新赋值 */
-	/* 当有新的http连接建连成功的时候，ngx会创建一个新的ngx_http_connection_t数据结构，保存在data字段 */
+	/* 当有新的http连接建连成功的时候，ngx会创建一个新的ngx_http_request_t数据结构，保存在data字段 */
     void               *data;
     ngx_event_t        *read;
     ngx_event_t        *write;
@@ -157,6 +159,7 @@ struct ngx_connection_s {
     struct sockaddr    *local_sockaddr;
     socklen_t           local_socklen;
 
+	/* 用于缓存客户端发来的数据 */
     ngx_buf_t          *buffer;
 
     ngx_queue_t         queue;

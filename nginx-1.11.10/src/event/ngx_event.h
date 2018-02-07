@@ -109,6 +109,10 @@ struct ngx_event_s {
     unsigned         available:1;
 #endif
 
+	/* 对于ngx http 读事件 */
+	/* 在连接没有建立之前，handler对应的是ngx_event_accept */
+	/* 连接建立之后会被设置为ngx_http_wait_request_handler，等待可读数据 */
+	/* 当收到第一个读事件之后，会被设置为ngx_http_process_request_line */
     ngx_event_handler_pt  handler;
 
 

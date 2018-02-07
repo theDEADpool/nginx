@@ -1212,10 +1212,11 @@ ngx_http_add_addresses(ngx_conf_t *cf, ngx_http_core_srv_conf_t *cscf,
      * may fill some fields in inherited sockaddr struct's
      */
 
+	/* port->addr是当前端口对应的所有监听地址 */
     addr = port->addrs.elts;
 
     for (i = 0; i < port->addrs.nelts; i++) {
-
+		/* 如果当前监听的ip已经存在了，则将server配置加到对应的数据结构中 */
         if (ngx_cmp_sockaddr(&lsopt->sockaddr.sockaddr, lsopt->socklen,
                              &addr[i].opt.sockaddr.sockaddr,
                              addr[i].opt.socklen, 0)

@@ -185,6 +185,7 @@ typedef struct {
 
     ngx_hash_keys_arrays_t    *variables_keys;
 
+	/* 数组中存放的就是ngx_http_conf_port_t，每一个端口对应一个ngx_http_conf_port_t */
     ngx_array_t               *ports;
 
     ngx_uint_t                 try_files;       /* unsigned  try_files:1 */
@@ -277,10 +278,11 @@ typedef struct {
     ngx_uint_t                 naddrs;
 } ngx_http_port_t;
 
-
+/* 每个监听端口都对应这样一个结构 */
 typedef struct {
     ngx_int_t                  family;
     in_port_t                  port;
+	/* 监听端口下对应着的所有ngx_http_conf_addr_t */
     ngx_array_t                addrs;     /* array of ngx_http_conf_addr_t */
 } ngx_http_conf_port_t;
 
