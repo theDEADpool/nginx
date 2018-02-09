@@ -1382,6 +1382,7 @@ ngx_http_read_request_header(ngx_http_request_t *r)
 
     n = r->header_in->last - r->header_in->pos;
 
+	/* r->header_in中如果还有未解析完成的数据则暂时先不接收新的数据 */
     if (n > 0) {
         return n;
     }
