@@ -370,6 +370,8 @@ struct ngx_http_request_s {
     void                            **ctx;
     void                            **main_conf;
     void                            **srv_conf;
+
+	/* 在NGX_HTTP_FIND_CONFIG_PHASE阶段，会根据uri查找到对应的location，用这个指针来保存 */
     void                            **loc_conf;
 
 	/* 在ngx_http_create_request时候指向的是ngx_http_block_reading */

@@ -808,6 +808,7 @@ ngx_http_handler(ngx_http_request_t *r)
 
     r->connection->log->action = NULL;
 
+	/* internal = 0，表示不需要重定向 */
     if (!r->internal) {
         switch (r->headers_in.connection_type) {
         case 0:
@@ -825,6 +826,8 @@ ngx_http_handler(ngx_http_request_t *r)
 
         r->lingering_close = (r->headers_in.content_length_n > 0
                               || r->headers_in.chunked);
+
+		/* phase_handler设置为0，表示从ngx_http_phases定义的第一个阶段开始处理 */
         r->phase_handler = 0;
 
     } else {

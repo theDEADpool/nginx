@@ -190,6 +190,8 @@ typedef struct {
 
     ngx_uint_t                 try_files;       /* unsigned  try_files:1 */
 
+	/* 数组中存放的是HTTP下各个模块自定义的，各个HTTP解析阶段对应的处理函数 */
+	/* 如ngx_http_access_init，但并不是所有的HTTP的子模块都有定义各个阶段的处理函数 */
     ngx_http_phase_t           phases[NGX_HTTP_LOG_PHASE + 1];
 } ngx_http_core_main_conf_t;
 
