@@ -372,6 +372,7 @@ struct ngx_http_request_s {
     void                            **srv_conf;
     void                            **loc_conf;
 
+	/* 在ngx_http_create_request时候指向的是ngx_http_block_reading */
     ngx_http_event_handler_pt         read_event_handler;
     ngx_http_event_handler_pt         write_event_handler;
 
