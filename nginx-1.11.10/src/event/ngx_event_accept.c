@@ -138,7 +138,9 @@ ngx_event_accept(ngx_event_t *ev)
         (void) ngx_atomic_fetch_add(ngx_stat_accepted, 1);
 #endif
 
-		/*ngx_accept_disabled用于负载均衡*/
+		/* ngx_accept_disabled用于负载均衡 */
+		/* 当剩余连接小于总连接数1/8的时候，ngx_accept_disabled大于0，
+		且剩余连接数越小，ngx_accept_disabled越大*/
         ngx_accept_disabled = ngx_cycle->connection_n / 8
                               - ngx_cycle->free_connection_n;
 

@@ -18,15 +18,24 @@ typedef void *            ngx_buf_tag_t;
 typedef struct ngx_buf_s  ngx_buf_t;
 
 struct ngx_buf_s {
+	/* 当前buf尚未处理的真实内容的起始位置 */
     u_char          *pos;
+	/* 当前buf真实内容的结束位置 */
     u_char          *last;
+	/* 在文件中真实内容的起始位置   */
     off_t            file_pos;
+	/* 在文件中真实内容的结束位置   */
     off_t            file_last;
 
     u_char          *start;         /* start of buffer */
     u_char          *end;           /* end of buffer */
-    ngx_buf_tag_t    tag;
+	/* buffer属于哪个模块的标志 */
+	ngx_buf_tag_t    tag;
+	/* buffer所引用的文件 */
     ngx_file_t      *file;
+	/* 用来引用替换过后的buffer，以便当所有buffer输出以后，
+     * 这个影子buffer可以被释放。
+     */
     ngx_buf_t       *shadow;
 
 
@@ -42,16 +51,26 @@ struct ngx_buf_s {
     /* the buf's content is mmap()ed and must not be changed */
     unsigned         mmap:1;
 
+	/* 内存可以被输出并回收 */
     unsigned         recycled:1;
+	/* buffer的内容在文件中 */
     unsigned         in_file:1;
+	/* 马上全部输出buffer的内容, gzip模块里面用得比较多 */
     unsigned         flush:1;
+	/* 基本上是一段输出链的最后一个buffer带的标志，标示可以输出，
+    * 有些零长度的buffer也可以置该标志
+    */
     unsigned         sync:1;
+	/* 所有请求里面最后一块buffer，包含子请求 */
     unsigned         last_buf:1;
+	/* 当前请求输出链的最后一块buffer         */
     unsigned         last_in_chain:1;
-
+	/* shadow链里面的最后buffer，可以释放buffer了 */
     unsigned         last_shadow:1;
+	/* 是否是暂存文件 */
     unsigned         temp_file:1;
 
+	/* 统计用，表示使用次数 */
     /* STUB */ int   num;
 };
 

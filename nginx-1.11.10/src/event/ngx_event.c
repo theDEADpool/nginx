@@ -217,14 +217,19 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
     }
 
     if (ngx_use_accept_mutex) {
+		/* 如果ngx_accept_disabled大于0，则不会去竞争accept_mutex */
         if (ngx_accept_disabled > 0) {
             ngx_accept_disabled--;
 
         } else {
+        	/* 只有得到accept_mutex，才能处理accept事件 */
             if (ngx_trylock_accept_mutex(cycle) == NGX_ERROR) {
                 return;
             }
 
+			/* 设置NGX_POST_EVENTS标志的话，所有事件都会延后处理，在ngx_epoll_process_events函数中，事件被加入队列 */
+			/* accept事件被加入到ngx_posted_accept_events队列中 */
+			/* 其他事件被加入到ngx_posted_events队列中 */
             if (ngx_accept_mutex_held) {
                 flags |= NGX_POST_EVENTS;
 
@@ -240,6 +245,7 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
 
     delta = ngx_current_msec;
 
+	/* 这里在epoll事件里面实际上就是调用ngx_epoll_process_events */
     (void) ngx_process_events(cycle, timer, flags);
 
     delta = ngx_current_msec - delta;
@@ -247,6 +253,7 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
     ngx_log_debug1(NGX_LOG_DEBUG_EVENT, cycle->log, 0,
                    "timer delta: %M", delta);
 
+	/* 处理ngx_posted_accept_events队列中的accept事件 */
     ngx_event_process_posted(cycle, &ngx_posted_accept_events);
 
     if (ngx_accept_mutex_held) {
@@ -257,6 +264,7 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
         ngx_event_expire_timers();
     }
 
+	/* accept_mutex锁被释放之后，再处理EPOLLIN或EPOLLOUT事件 */
     ngx_event_process_posted(cycle, &ngx_posted_events);
 }
 

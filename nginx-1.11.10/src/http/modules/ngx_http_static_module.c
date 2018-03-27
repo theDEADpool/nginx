@@ -281,6 +281,7 @@ ngx_http_static_init(ngx_conf_t *cf)
         return NGX_ERROR;
     }
 
+	/* 在NGX_HTTP_CONTENT_PHASE挂载静态文件处理函数 */
     *h = ngx_http_static_handler;
 
     return NGX_OK;

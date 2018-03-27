@@ -2541,10 +2541,12 @@ ngx_http_subrequest(ngx_http_request_t *r,
         return NGX_ERROR;
     }
 
+	/* sr需要发送的子请求 */
     pr->request = sr;
     pr->out = NULL;
     pr->next = NULL;
 
+	/* 父请求下面挂载子请求的链表 */
     if (r->postponed) {
         for (p = r->postponed; p->next; p = p->next) { /* void */ }
         p->next = pr;
