@@ -202,6 +202,8 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
         flags = 0;
 
     } else {
+		/* 这里对于timer的设置主要是为了下面ngx_epoll_process_events里面epoll_wait设置超时时间
+		防止epoll_wait一直阻塞不触发，影响后续定时事件的处理 */
         timer = ngx_event_find_timer();
         flags = NGX_UPDATE_TIME;
 
@@ -260,6 +262,8 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
         ngx_shmtx_unlock(&ngx_accept_mutex);
     }
 
+	/* delta表示本次epoll事件执行的耗时，如果耗时非常短的话就不再执行定时器超时事件
+	因为耗时非常短意味着距离上一次处理ngx_process_events_and_timers时间间隔很小，没必要处理超时事件*/
     if (delta) {
         ngx_event_expire_timers();
     }
