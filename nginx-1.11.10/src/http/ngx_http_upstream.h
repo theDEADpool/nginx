@@ -81,7 +81,9 @@ typedef ngx_int_t (*ngx_http_upstream_init_peer_pt)(ngx_http_request_t *r,
 
 
 typedef struct {
+	/* init_upstream会在ngx_http_upstream_init_main_conf中被调用 */
     ngx_http_upstream_init_pt        init_upstream;
+	/* init会在ngx_http_upstream_init_request中被调用 */
     ngx_http_upstream_init_peer_pt   init;
     void                            *data;
 } ngx_http_upstream_peer_t;
@@ -340,17 +342,32 @@ struct ngx_http_upstream_s {
     ngx_chain_t                     *busy_bufs;
     ngx_chain_t                     *free_bufs;
 
+	/* 初始化input filter的上下文。nginx默认的input_filter_init 直接返回 */
     ngx_int_t                      (*input_filter_init)(void *data);
+
+	/* 处理后端服务器返回的响应正文。nginx默认的input_filter会 将收到的内容封装成为缓冲区链ngx_chain。
+	该链由upstream的 out_bufs指针域定位，所以开发人员可以在模块以外通过该指针 得到后端服务器返回的正文数据。
+	memcached模块实现了自己的 input_filter */
     ngx_int_t                      (*input_filter)(void *data, ssize_t bytes);
     void                            *input_filter_ctx;
 
 #if (NGX_HTTP_CACHE)
     ngx_int_t                      (*create_key)(ngx_http_request_t *r);
 #endif
+	/* 生成发送到后端服务器的请求缓冲（缓冲链），在初始化upstream 时使用 */
     ngx_int_t                      (*create_request)(ngx_http_request_t *r);
+
+	/*在某台后端服务器出错的情况，nginx会尝试另一台后端服务器。 nginx选定新的服务器以后，会先调用此函数，
+	以重新初始化 upstream模块的工作状态，然后再次进行upstream连接*/
     ngx_int_t                      (*reinit_request)(ngx_http_request_t *r);
+
+	/* 处理后端服务器返回的信息头部。所谓头部是与upstream server 通信的协议规定的，
+	比如HTTP协议的header部分，或者memcached 协议的响应状态部分 */
     ngx_int_t                      (*process_header)(ngx_http_request_t *r);
+
     void                           (*abort_request)(ngx_http_request_t *r);
+
+	/* 正常完成与后端服务器的请求后调用该函数，与abort_request 相同，一般也不会进行任何具体工作 */
     void                           (*finalize_request)(ngx_http_request_t *r,
                                          ngx_int_t rc);
     ngx_int_t                      (*rewrite_redirect)(ngx_http_request_t *r,

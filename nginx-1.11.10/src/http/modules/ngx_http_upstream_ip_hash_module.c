@@ -83,6 +83,7 @@ static u_char ngx_http_upstream_ip_hash_pseudo_addr[3];
 static ngx_int_t
 ngx_http_upstream_init_ip_hash(ngx_conf_t *cf, ngx_http_upstream_srv_conf_t *us)
 {
+	/* 通过round_robin函数对us进行一些初始化操作，负载均衡模块可以互相调用函数 */
     if (ngx_http_upstream_init_round_robin(cf, us) != NGX_OK) {
         return NGX_ERROR;
     }
@@ -259,6 +260,7 @@ ngx_http_upstream_ip_hash(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
                            "load balancing method redefined");
     }
 
+	/* init_upstream会在ngx_http_upstream_init_main_conf中被调用 */
     uscf->peer.init_upstream = ngx_http_upstream_init_ip_hash;
 
     uscf->flags = NGX_HTTP_UPSTREAM_CREATE

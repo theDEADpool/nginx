@@ -6365,9 +6365,9 @@ ngx_http_upstream_init_main_conf(ngx_conf_t *cf, void *conf)
     ngx_http_upstream_srv_conf_t  **uscfp;
 
     uscfp = umcf->upstreams.elts;
-
+	/* 这里umcf->upstream是配置的所有upstream的数组 */
     for (i = 0; i < umcf->upstreams.nelts; i++) {
-
+		/* 如果upstream块中没有指定负载均衡规则，则默认设置为轮询 */
         init = uscfp[i]->peer.init_upstream ? uscfp[i]->peer.init_upstream:
                                             ngx_http_upstream_init_round_robin;
 
