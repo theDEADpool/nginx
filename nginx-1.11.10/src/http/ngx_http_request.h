@@ -389,6 +389,7 @@ struct ngx_http_request_s {
     ngx_pool_t                       *pool;
     ngx_buf_t                        *header_in;
 
+	/* 保存所有请求头的链表 */
     ngx_http_headers_in_t             headers_in;
     ngx_http_headers_out_t            headers_out;
 

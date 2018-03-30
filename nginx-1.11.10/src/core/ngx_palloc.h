@@ -47,13 +47,17 @@ struct ngx_pool_large_s {
 
 
 typedef struct {
+	/* last指向数据空间的起始地址 */
     u_char               *last;
+
+	/* end指向数据空间的结束地址 */
     u_char               *end;
     ngx_pool_t           *next;
     ngx_uint_t            failed;
 } ngx_pool_data_t;
 
-
+/* ngx_pool_s结构体可以看做是内存池的头部，每创建一块内存池，都会带有这样一个头部
+剩下的空间才是用于数据存储的内存 */
 struct ngx_pool_s {
     ngx_pool_data_t       d;
     size_t                max;

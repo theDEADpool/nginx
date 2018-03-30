@@ -30,7 +30,11 @@ ngx_create_pool(size_t size, ngx_log_t *log)
     p->d.next = NULL;
     p->d.failed = 0;
 
+	/* size的大小是实际数据空间的大小，不包括内存池头部信息 */
     size = size - sizeof(ngx_pool_t);
+
+	/* max是小内存块的最大数据空间大小，当从内存池中获取内存块时，如果所需的内存块大小超过
+	max的值，则认为是大内存块，处理流程和小内存块不一样 */
     p->max = (size < NGX_MAX_ALLOC_FROM_POOL) ? size : NGX_MAX_ALLOC_FROM_POOL;
 
     p->current = p;
@@ -118,7 +122,7 @@ ngx_reset_pool(ngx_pool_t *pool)
     pool->large = NULL;
 }
 
-
+/* 该函数申请的内存满足字节对齐 */
 void *
 ngx_palloc(ngx_pool_t *pool, size_t size)
 {
@@ -131,7 +135,7 @@ ngx_palloc(ngx_pool_t *pool, size_t size)
     return ngx_palloc_large(pool, size);
 }
 
-
+/* 该函数申请的内存不满足字节对齐 */
 void *
 ngx_pnalloc(ngx_pool_t *pool, size_t size)
 {
@@ -160,16 +164,19 @@ ngx_palloc_small(ngx_pool_t *pool, size_t size, ngx_uint_t align)
             m = ngx_align_ptr(m, NGX_ALIGNMENT);
         }
 
+		/* 内存池空间大小能够满足申请内存的大小 */
         if ((size_t) (p->d.end - m) >= size) {
             p->d.last = m + size;
 
             return m;
         }
 
+		/* 当前内存池不满足要求，则看下一块内存池是否满足要求 */
         p = p->d.next;
 
     } while (p);
 
+	/* 没有满足要求的内存池，则创建一个新的内存池 */
     return ngx_palloc_block(pool, size);
 }
 
@@ -183,6 +190,7 @@ ngx_palloc_block(ngx_pool_t *pool, size_t size)
 
     psize = (size_t) (pool->d.end - (u_char *) pool);
 
+	/* 新申请的内存池和原始内存池大小一样 */
     m = ngx_memalign(NGX_POOL_ALIGNMENT, psize, pool->log);
     if (m == NULL) {
         return NULL;
@@ -198,6 +206,8 @@ ngx_palloc_block(ngx_pool_t *pool, size_t size)
     m = ngx_align_ptr(m, NGX_ALIGNMENT);
     new->d.last = m + size;
 
+	/* 在原始内存池的基础上，如果创建超过4个新的内存池，则直接将current指向最后一个内存池。
+	后续从内存池中获取内存的时候，就不需要每次都从第一个内存池进行判断了 */
     for (p = pool->current; p->d.next; p = p->d.next) {
         if (p->d.failed++ > 4) {
             pool->current = p->d.next;
@@ -225,6 +235,7 @@ ngx_palloc_large(ngx_pool_t *pool, size_t size)
     n = 0;
 
     for (large = pool->large; large; large = large->next) {
+		/* 把大内存池挂在到链表里 */
         if (large->alloc == NULL) {
             large->alloc = p;
             return p;
@@ -241,6 +252,7 @@ ngx_palloc_large(ngx_pool_t *pool, size_t size)
         return NULL;
     }
 
+	/* 如果已经申请过超过3个large内存池，就把新申请的large内存池放在整个链表的头部，提升效率 */
     large->alloc = p;
     large->next = pool->large;
     pool->large = large;
