@@ -939,6 +939,7 @@ ngx_http_process_request_line(ngx_event_t *rev)
         return;
     }
 
+	/* rc初始化为NGX_AGAIN，读取一次数据，并解析之后发现数据不完整，也会返回NGX_AGAIN，这样就会再次读取数据 */
     rc = NGX_AGAIN;
 
     for ( ;; ) {
@@ -1310,11 +1311,11 @@ ngx_http_process_request_headers(ngx_event_t *rev)
 
             if (h->key.len == r->lowcase_index) {
                 ngx_memcpy(h->lowcase_key, r->lowcase_header, h->key.len);
-
             } else {
                 ngx_strlow(h->lowcase_key, h->key.data, h->key.len);
             }
 
+			/* 根据ngx_http_headers_in数组中定义的各类请求头找到其对应的处理函数 */
             hh = ngx_hash_find(&cmcf->headers_in_hash, h->hash,
                                h->lowcase_key, h->key.len);
 
