@@ -146,15 +146,28 @@ typedef ngx_int_t (*ngx_http_phase_handler_pt)(ngx_http_request_t *r,
     ngx_http_phase_handler_t *ph);
 
 struct ngx_http_phase_handler_s {
+	/* check方法只能由http框架实现，在ngx_http_init_phase_handler中被赋值。
+	处理到某一个阶段的时候，http框架会在check方法存在的情况下，先执行check方法，不会直接执行handler方法。
+	在check方法中再去调用handler方法，而且所有的check方法都是ngx_http_core_module实现的，其他http模块无法重定义 */
     ngx_http_phase_handler_pt  checker;
+
+	/* 由http模块自己实现的handler方法 */
     ngx_http_handler_pt        handler;
+
+	/* 表示要执行的下一个http阶段的编号，这样就使得http的处理阶段不需要按序执行，可以跳转到之前的某个阶段，
+	也可以跳转到之后的某个阶段。next表示下一个阶段中第一个ngx_http_phase_handler_s方法 */
     ngx_uint_t                 next;
 };
 
 
 typedef struct {
+	/* handlers是一个数组，数组成员是所有的ngx_http_handler_pt方法 */
     ngx_http_phase_handler_t  *handlers;
+
+	/* 表示NGX_HTTP_SERVER_REWRITE_PHASE阶段第一个ngx_http_phase_handler处理方法在数组handlers中的序号 */
     ngx_uint_t                 server_rewrite_index;
+
+	/* 表示NGX_HTTP_REWRITE_PHASE阶段第一个ngx_http_phase_handler处理方法在数组handlers中的序号 */
     ngx_uint_t                 location_rewrite_index;
 } ngx_http_phase_engine_t;
 

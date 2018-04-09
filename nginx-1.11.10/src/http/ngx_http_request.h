@@ -412,7 +412,13 @@ struct ngx_http_request_s {
     ngx_str_t                         http_protocol;
 
     ngx_chain_t                      *out;
+
+	/* 当前请求既有可能是用户发来的请求，也可能是派生出的子请求。 
+     * 而main标识一系列相关的派生子请求的原始请求。 
+     * 一般可通过main和当前请求的地址是否相等来判断当前请求是否为用户发来的原始请求 */
     ngx_http_request_t               *main;
+
+	/* 当前请求的父请求（不一定是原始请求） */
     ngx_http_request_t               *parent;
     ngx_http_postponed_request_t     *postponed;
     ngx_http_post_subrequest_t       *post_subrequest;

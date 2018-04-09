@@ -466,6 +466,7 @@ ngx_http_init_phase_handlers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf)
         + cmcf->try_files;
 
     for (i = 0; i < NGX_HTTP_LOG_PHASE; i++) {
+		/* 这里就是由各个http模块自定义的在所有http处理阶段的方法总数 */
         n += cmcf->phases[i].handlers.nelts;
     }
 
@@ -479,8 +480,10 @@ ngx_http_init_phase_handlers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf)
     n = 0;
 
     for (i = 0; i < NGX_HTTP_LOG_PHASE; i++) {
+		/* cmcf->phases[].handlers.elts动态数组，是配置解析过程中保存，由各个http子模块挂载的自定义处理函数的动态数组 */
         h = cmcf->phases[i].handlers.elts;
 
+		/* 注意switch语句里面有几个continue的case，这些case意味着在对应的阶段是不允许有其他http模块自定义的handler函数 */
         switch (i) {
 
         case NGX_HTTP_SERVER_REWRITE_PHASE:
@@ -551,6 +554,9 @@ ngx_http_init_phase_handlers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf)
 
         n += cmcf->phases[i].handlers.nelts;
 
+		/* 两层for循环，实际上是将http处理的每个阶段下，又各个http子模块挂载的处理函数，组成一个数组
+		数组的内容可以表示为[阶段1]处理函数1[阶段1]处理函数2[阶段1]处理函数3...[阶段2]处理函数1[阶段2]处理函数2...[阶段N]处理函数1[阶段N]处理函数2
+		next则是指向了当前阶段的下一个阶段是什么，便于在执行的过程中快速跳转到下一个阶段 */
         for (j = cmcf->phases[i].handlers.nelts - 1; j >=0; j--) {
             ph->checker = checker;
             ph->handler = h[j];

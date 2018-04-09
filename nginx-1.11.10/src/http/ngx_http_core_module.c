@@ -831,6 +831,7 @@ ngx_http_handler(ngx_http_request_t *r)
         r->phase_handler = 0;
 
     } else {
+		/* 如果需要重定向的话，则调用NGX_HTTP_SERVER_REWRITE_PHASE阶段的处理函数 */
         cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
         r->phase_handler = cmcf->phase_engine.server_rewrite_index;
     }
@@ -869,6 +870,7 @@ ngx_http_core_run_phases(ngx_http_request_t *r)
 }
 
 
+/* 这个函数只做了一件事，就是执行当前阶段的handler函数，然后根据handler函数的返回值，决定下一步的行为 */
 ngx_int_t
 ngx_http_core_generic_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
 {
@@ -885,11 +887,15 @@ ngx_http_core_generic_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
     rc = ph->handler(r);
 
     if (rc == NGX_OK) {
+		/* 不管当前阶段是否还有其他的处理函数，直接执行下一个阶段的处理函数 */
         r->phase_handler = ph->next;
         return NGX_AGAIN;
     }
 
     if (rc == NGX_DECLINED) {
+		/* 这里phase_handler++，返回到上层函数ngx_http_core_run_phases，会继续执行下一个处理函数。
+		但需要注意的是，下一个处理函数可能仍然是当前这个阶段的，也可能是下一个阶段的，而上面NGX_OK的情况，
+		则一定是去执行下一个阶段的处理函数 */
         r->phase_handler++;
         return NGX_AGAIN;
     }

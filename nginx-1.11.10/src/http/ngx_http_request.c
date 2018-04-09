@@ -1901,6 +1901,9 @@ ngx_http_process_request(ngx_http_request_t *r)
 
 #endif
 
+	/* 已经开始进行请求体的处理，就不需要保留请求头部超时的定时任务。
+	在http处理流程里面，这个字段会在调用recv接口返回NGX_AGAIN的情况下，
+	通过ngx_add_timer来设置 */
     if (c->read->timer_set) {
         ngx_del_timer(c->read);
     }
@@ -1912,6 +1915,7 @@ ngx_http_process_request(ngx_http_request_t *r)
     r->stat_writing = 1;
 #endif
 
+	/* 重新设置读写事件的处理方法 */
     c->read->handler = ngx_http_request_handler;
     c->write->handler = ngx_http_request_handler;
     r->read_event_handler = ngx_http_block_reading;
