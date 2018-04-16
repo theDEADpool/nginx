@@ -55,6 +55,7 @@ struct ngx_listening_s {
 
     ngx_uint_t          worker;
 
+	/* 为1表示当前端口使用中，在ngx_init_cycle过程中不关闭监听端口。为0则可以关闭 */
     unsigned            open:1;
     unsigned            remain:1;
     unsigned            ignore:1;

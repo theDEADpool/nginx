@@ -106,37 +106,37 @@ typedef struct {
 
 
 typedef enum {
-	/*在接收完整http头部之后*/
+	/* 在接收完整http头部之后 */
     NGX_HTTP_POST_READ_PHASE = 0,
 
-	/*在还没有查询到URI匹配的location之前*/
+	/* 在还没有查询到URI匹配的location之前 */
     NGX_HTTP_SERVER_REWRITE_PHASE,
 
-	/*根据URI寻找匹配的location*/
+	/* 根据URI寻找匹配的location */
     NGX_HTTP_FIND_CONFIG_PHASE,
 
-	/*匹配location之后再重写URI*/
+	/* 匹配location之后再重写URI */
     NGX_HTTP_REWRITE_PHASE,
 
-	/*重新回到NGX_HTTP_FIND_CONFIG_PHASE阶段，用重写之后的URI再次匹配location*/
+	/* 重新回到NGX_HTTP_FIND_CONFIG_PHASE阶段，用重写之后的URI再次匹配location */
     NGX_HTTP_POST_REWRITE_PHASE,
 
-	/*判断是否允许当前请求访问nginx之前进行处理*/
+	/* 判断是否允许当前请求访问nginx之前进行处理 */
     NGX_HTTP_PREACCESS_PHASE,
 
-	/*判断是否允许当前请求访问nginx*/
+	/* 判断是否允许当前请求访问nginx */
     NGX_HTTP_ACCESS_PHASE,
 
-	/*如果在上面一个阶段访问被拒绝，则通过这个阶段进行后续操作，比如构造拒绝服务的响应*/
+	/* 如果在上面一个阶段访问被拒绝，则通过这个阶段进行后续操作，比如构造拒绝服务的响应 */
     NGX_HTTP_POST_ACCESS_PHASE,
 
-	/*为了try_file配置项设立的阶段，当http请求需要访问静态文件的时候，try_file配置可以让请求顺序访问多个文件*/
+	/* 为了try_file配置项设立的阶段，当http请求需要访问静态文件的时候，try_file配置可以让请求顺序访问多个文件 */
     NGX_HTTP_TRY_FILES_PHASE,
 
-	/*处理http请求内容*/
+	/* 处理http请求内容 */
     NGX_HTTP_CONTENT_PHASE,
 
-	/*完成http请求处理，记录日志的阶段*/
+	/* 完成http请求处理，记录日志的阶段 */
     NGX_HTTP_LOG_PHASE
 } ngx_http_phases;
 
@@ -369,6 +369,8 @@ struct ngx_http_core_loc_conf_s {
     uint32_t      limit_except;
     void        **limit_except_loc_conf;
 
+	/* 用于挂载http模块自定义的方法，在NGX_HTTP_CONTENT_PHASE阶段执行
+	如果定义了这个方法，那么在http请求处理过程中，就不会再执行ngx_http_core_main_conf_t中phase里面挂载的方法 */
     ngx_http_handler_pt  handler;
 
     /* location name length for inclusive location with inherited alias */
