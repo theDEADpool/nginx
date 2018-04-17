@@ -284,14 +284,23 @@ typedef struct {
 typedef void (*ngx_http_client_body_handler_pt)(ngx_http_request_t *r);
 
 typedef struct {
+	/* 存放http请求体的临时文件，主要是怕http请求体过大，内存耗尽，所以才使用临时文件 */
     ngx_temp_file_t                  *temp_file;
+
+	/* 存放http请求体的链表，如果http请求体需要存放在内存里但一块buf又放不下，使用该链表来存放 */
     ngx_chain_t                      *bufs;
+
+	/* 直接保存http请求体的buf */
     ngx_buf_t                        *buf;
+
+	/* 根据content-length和已经接收到的请求体长度，计算出的剩余请求体大小 */
     off_t                             rest;
     off_t                             received;
     ngx_chain_t                      *free;
     ngx_chain_t                      *busy;
     ngx_http_chunked_t               *chunked;
+
+	/* http请求体接收完成之后的回调函数 */
     ngx_http_client_body_handler_pt   post_handler;
 } ngx_http_request_body_t;
 
@@ -414,7 +423,7 @@ struct ngx_http_request_s {
     ngx_chain_t                      *out;
 
 	/* 当前请求既有可能是用户发来的请求，也可能是派生出的子请求。 
-     * 而main标识一系列相关的派生子请求的原始请求。 
+     * 而main标识一系列子请求的原始请求。 
      * 一般可通过main和当前请求的地址是否相等来判断当前请求是否为用户发来的原始请求 */
     ngx_http_request_t               *main;
 
@@ -422,6 +431,8 @@ struct ngx_http_request_s {
     ngx_http_request_t               *parent;
     ngx_http_postponed_request_t     *postponed;
     ngx_http_post_subrequest_t       *post_subrequest;
+
+	/* 保存子请求的链表 */
     ngx_http_posted_request_t        *posted_requests;
 
     ngx_int_t                         phase_handler;
@@ -453,6 +464,8 @@ struct ngx_http_request_s {
 
     ngx_http_cleanup_t               *cleanup;
 
+	/* count用于计数，每当派生一个子请求，原始请求的count就会加1，只有当原始请求的count为0时，
+	原始请求才能被销毁 */
     unsigned                          count:16;
     unsigned                          subrequests:8;
     unsigned                          blocked:8;

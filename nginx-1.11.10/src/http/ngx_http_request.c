@@ -2239,6 +2239,8 @@ ngx_http_run_posted_requests(ngx_connection_t *c)
         ngx_log_debug2(NGX_LOG_DEBUG_HTTP, c->log, 0,
                        "http posted request: \"%V?%V\"", &r->uri, &r->args);
 
+		/* 如果上一层函数是ngx_http_process_request，那么这里的write_event_handler就是ngx_http_core_run_phases
+		在ngx_http_handler里面赋值 */
         r->write_event_handler(r);
     }
 }

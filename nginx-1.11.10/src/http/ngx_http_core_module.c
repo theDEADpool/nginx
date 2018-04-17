@@ -1389,7 +1389,8 @@ ngx_http_core_content_phase(ngx_http_request_t *r,
     ngx_int_t  rc;
     ngx_str_t  path;
 
-	/* 如果uri对应了特定的处理函数，则调用该函数处理 */
+	/* 如果uri对应了特定的处理函数，则调用该函数处理
+	这个就是http模块挂载在ngx_http_core_loc_conf_t中handler上的方法 */
     if (r->content_handler) {
         r->write_event_handler = ngx_http_request_empty_handler;
         ngx_http_finalize_request(r, r->content_handler(r));
@@ -1410,6 +1411,8 @@ ngx_http_core_content_phase(ngx_http_request_t *r,
 
     ph++;
 
+	/* ph数组在创建的时候最后一个成员是一个预留成员，ph->checker是没有赋值的，
+	这样做的目的就是为了方便判断已经到了ph数组的最后一项，这种情况下是不需要执行r->phase_handler++操作的 */
     if (ph->checker) {
         r->phase_handler++;
         return NGX_AGAIN;

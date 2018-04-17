@@ -40,6 +40,7 @@ ngx_http_read_client_request_body(ngx_http_request_t *r,
 
     r->main->count++;
 
+	/* r->request_body分配过，表示已经读取过包体 */
     if (r != r->main || r->request_body || r->discard_body) {
         r->request_body_no_buffering = 0;
         post_handler(r);
@@ -85,6 +86,7 @@ ngx_http_read_client_request_body(ngx_http_request_t *r,
         return NGX_OK;
     }
 
+	/* preread是因为前面读取http请求头部的时候，可能也读取了一部分请求体 */
     preread = r->header_in->last - r->header_in->pos;
 
     if (preread) {
@@ -141,6 +143,7 @@ ngx_http_read_client_request_body(ngx_http_request_t *r,
         }
     }
 
+	/* 表示整个http请求体都已经被读取了，这时候直接处理即可 */
     if (rb->rest == 0) {
         /* the whole request body was pre-read */
         r->request_body_no_buffering = 0;
@@ -260,6 +263,7 @@ ngx_http_read_client_request_body_handler(ngx_http_request_t *r)
 }
 
 
+/* 读取完成http请求体，并根据情况，可能将读取到的数据写入临时文件中*/
 static ngx_int_t
 ngx_http_do_read_client_request_body(ngx_http_request_t *r)
 {
@@ -282,6 +286,7 @@ ngx_http_do_read_client_request_body(ngx_http_request_t *r)
         for ( ;; ) {
             if (rb->buf->last == rb->buf->end) {
 
+				/* pos == last表示buf中已经没有空间，这时要将数据写入临时文件 */
                 if (rb->buf->pos != rb->buf->last) {
 
                     /* pass buffer to request body filter chain */
@@ -322,6 +327,7 @@ ngx_http_do_read_client_request_body(ngx_http_request_t *r)
                     return NGX_HTTP_INTERNAL_SERVER_ERROR;
                 }
 
+				/* 数据写入临时文件之后，last = start，这样缓冲区就可以复用了 */
                 rb->buf->pos = rb->buf->start;
                 rb->buf->last = rb->buf->start;
             }
@@ -333,6 +339,7 @@ ngx_http_do_read_client_request_body(ngx_http_request_t *r)
                 size = (size_t) rest;
             }
 
+			/* 继续读取http请求体数据 */
             n = c->recv(c, rb->buf->last, size);
 
             ngx_log_debug1(NGX_LOG_DEBUG_HTTP, c->log, 0,
@@ -380,10 +387,12 @@ ngx_http_do_read_client_request_body(ngx_http_request_t *r)
         ngx_log_debug1(NGX_LOG_DEBUG_HTTP, c->log, 0,
                        "http client request body rest %O", rb->rest);
 
+		/* rest == 0表示http请求体已经读完了 */
         if (rb->rest == 0) {
             break;
         }
 
+		/* http请求体没有读完，!ready表示现在没有可读事件，那就只能启动定时器等待 */
         if (!c->read->ready) {
 
             if (r->request_body_no_buffering
@@ -404,6 +413,7 @@ ngx_http_do_read_client_request_body(ngx_http_request_t *r)
             clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
             ngx_add_timer(c->read, clcf->client_body_timeout);
 
+			/* 设置读事件，通过回调ngx_http_request_handler来回调ngx_http_read_client_request_body_handler */
             if (ngx_handle_read_event(c->read, 0) != NGX_OK) {
                 return NGX_HTTP_INTERNAL_SERVER_ERROR;
             }
@@ -412,6 +422,7 @@ ngx_http_do_read_client_request_body(ngx_http_request_t *r)
         }
     }
 
+	/* 跳出循环，表示http请求体已经读完了，要删除定时器 */
     if (c->read->timer_set) {
         ngx_del_timer(c->read);
     }
@@ -507,6 +518,7 @@ ngx_http_write_request_body(ngx_http_request_t *r)
 }
 
 
+/* 将http请求体接收完成之后直接丢弃 */
 ngx_int_t
 ngx_http_discard_request_body(ngx_http_request_t *r)
 {
