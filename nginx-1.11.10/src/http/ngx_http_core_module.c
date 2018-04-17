@@ -901,6 +901,8 @@ ngx_http_core_generic_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
     }
 
     if (rc == NGX_AGAIN || rc == NGX_DONE) {
+		/* 这个两个返回值表示停留在当前的处理函数，下次再调用。比如有可能处理函数处理数据的时候发现不完整，
+		需要等待新的数据收取之后继续处理 */
         return NGX_OK;
     }
 
@@ -1150,6 +1152,7 @@ ngx_http_core_post_access_phase(ngx_http_request_t *r,
 
     access_code = r->access_code;
 
+	/* access_code不为0表示没有访问权限 */
     if (access_code) {
         if (access_code == NGX_HTTP_FORBIDDEN) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
@@ -1166,6 +1169,7 @@ ngx_http_core_post_access_phase(ngx_http_request_t *r,
 }
 
 
+/* 如果try_files指定的静态文件有一个可以访问，则直接发送响应给用户，而不会执行其他阶段的处理 */
 ngx_int_t
 ngx_http_core_try_files_phase(ngx_http_request_t *r,
     ngx_http_phase_handler_t *ph)
