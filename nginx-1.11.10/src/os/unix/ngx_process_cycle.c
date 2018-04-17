@@ -743,6 +743,7 @@ ngx_worker_process_cycle(ngx_cycle_t *cycle, void *data)
         if (ngx_exiting) {
             ngx_event_cancel_timers();
 
+			/* 红黑树为空表示所有事件已经处理完成，可以退出子进程 */
             if (ngx_event_timer_rbtree.root == ngx_event_timer_rbtree.sentinel)
             {
                 ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0, "exiting");
@@ -755,12 +756,14 @@ ngx_worker_process_cycle(ngx_cycle_t *cycle, void *data)
 
         ngx_process_events_and_timers(cycle);
 
+		/* terminate是强制关闭 */
         if (ngx_terminate) {
             ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0, "exiting");
 
             ngx_worker_process_exit(cycle);
         }
 
+		/* quit是正常关闭 */
         if (ngx_quit) {
             ngx_quit = 0;
             ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0,

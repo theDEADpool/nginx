@@ -220,7 +220,10 @@
 
 
 struct ngx_module_s {
+	/* ctx_index表示某个模块在相同类型模块中的顺序 */
     ngx_uint_t            ctx_index;
+
+	/* index表示所有模块在ngx_modules中的序号 */
     ngx_uint_t            index;
 
     char                 *name;
