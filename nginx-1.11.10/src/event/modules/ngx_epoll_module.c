@@ -901,7 +901,9 @@ ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
             rev->ready = 1;
 
             if (flags & NGX_POST_EVENTS) {
-				/*带有POST标识的事件需要延后处理*/
+				/* 带有POST标识的事件需要延后处理 */
+				/* ngx_posted_accept_events是新连接相关的事件 */
+				/* ngx_posted_events是已有连接相关的事件 */
                 queue = rev->accept ? &ngx_posted_accept_events
                                     : &ngx_posted_events;
 

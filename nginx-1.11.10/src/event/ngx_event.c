@@ -255,7 +255,8 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
     ngx_log_debug1(NGX_LOG_DEBUG_EVENT, cycle->log, 0,
                    "timer delta: %M", delta);
 
-	/* 处理ngx_posted_accept_events队列中的accept事件 */
+	/* 处理ngx_posted_accept_events队列中的新连接事件，处理完之后立刻释放ngx_accept_mutex锁
+	然后再处理已有连接上的各类事件 */
     ngx_event_process_posted(cycle, &ngx_posted_accept_events);
 
     if (ngx_accept_mutex_held) {
