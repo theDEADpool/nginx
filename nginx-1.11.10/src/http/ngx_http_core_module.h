@@ -305,6 +305,8 @@ typedef struct {
 typedef struct {
     ngx_http_listen_opt_t      opt;
 
+	/* 下面3个表用于快速寻找到对应端口上的新连接，确定到底使用哪个server下的配置，每一个表项
+	就是ngx_http_core_svr_conf_t */
     ngx_hash_t                 hash;
     ngx_hash_wildcard_t       *wc_head;
     ngx_hash_wildcard_t       *wc_tail;
