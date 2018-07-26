@@ -605,7 +605,7 @@ ngx_epoll_add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
     }
 
     if (e->active) {
-		/*e->active == true表示为活跃时间，因此将新的epoll事件类型添加而不是替换原有的*/
+		/*e->active == true表示为活跃事件，因此将新的epoll事件类型添加而不是替换原有的*/
         op = EPOLL_CTL_MOD;
         events |= prev;
 
