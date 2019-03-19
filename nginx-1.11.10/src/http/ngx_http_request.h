@@ -174,6 +174,7 @@ typedef struct {
 
 
 typedef struct {
+	//保存解析到的http头部信息
     ngx_list_t                        headers;
 
     ngx_table_elt_t                  *host;
