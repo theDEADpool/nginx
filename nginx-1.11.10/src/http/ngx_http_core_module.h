@@ -161,7 +161,7 @@ struct ngx_http_phase_handler_s {
 
 
 typedef struct {
-	/* handlers是一个数组，数组成员是所有的ngx_http_handler_pt方法 */
+	/* handlers是一个数组，数组成员是所有http模块自定义的所有ngx_http_handler_pt方法 */
     ngx_http_phase_handler_t  *handlers;
 
 	/* 表示NGX_HTTP_SERVER_REWRITE_PHASE阶段第一个ngx_http_phase_handler处理方法在数组handlers中的序号 */
