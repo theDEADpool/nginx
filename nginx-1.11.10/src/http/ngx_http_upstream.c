@@ -512,6 +512,7 @@ ngx_http_upstream_init(ngx_http_request_t *r)
     }
 #endif
 
+	//取消读事件的超时定时器
     if (c->read->timer_set) {
         ngx_del_timer(c->read);
     }
@@ -2146,6 +2147,7 @@ ngx_http_upstream_send_request_handler(ngx_http_request_t *r,
 
 #endif
 
+	//header_sent为1表示nginx已经将上游服务器的响应头发送给客户端了，也就不能继续向上游服务器发送请求
     if (u->header_sent) {
         u->write_event_handler = ngx_http_upstream_dummy_handler;
 
