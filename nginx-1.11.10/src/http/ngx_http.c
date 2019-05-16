@@ -1365,6 +1365,7 @@ ngx_http_add_server(ngx_conf_t *cf, ngx_http_core_srv_conf_t *cscf,
 
     } else {
         server = addr->servers.elts;
+		//判断是否同一个sever多次监听相同的ip:port
         for (i = 0; i < addr->servers.nelts; i++) {
             if (server[i] == cscf) {
                 ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
@@ -1399,7 +1400,7 @@ ngx_http_optimize_servers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
 
     port = ports->elts;
     for (p = 0; p < ports->nelts; p++) {
-
+		//对监听相同端口的ip进行排序
         ngx_sort(port[p].addrs.elts, (size_t) port[p].addrs.nelts,
                  sizeof(ngx_http_conf_addr_t), ngx_http_cmp_conf_addrs);
 
@@ -1417,6 +1418,7 @@ ngx_http_optimize_servers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
 #endif
                )
             {
+            	//将监听相同端口的server加入哈希表
                 if (ngx_http_server_names(cf, cmcf, &addr[a]) != NGX_OK) {
                     return NGX_ERROR;
                 }

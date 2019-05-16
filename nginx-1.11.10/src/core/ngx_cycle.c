@@ -498,6 +498,8 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     if (old_cycle->listening.nelts) {
         ls = old_cycle->listening.elts;
         for (i = 0; i < old_cycle->listening.nelts; i++) {
+			//先将旧进程所有的监听socket都标记为待关闭
+			//但不一定会关闭，只是设定初始值。最终是否关闭在下面的流程中决定
             ls[i].remain = 0;
         }
 
@@ -517,6 +519,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
                     continue;
                 }
 
+				//比较新旧进程的监听socket，相同则不关闭旧进程的socket，而是继续使用
                 if (ngx_cmp_sockaddr(nls[n].sockaddr, nls[n].socklen,
                                      ls[i].sockaddr, ls[i].socklen, 1)
                     == NGX_OK)
@@ -683,7 +686,7 @@ old_shm_zone_done:
 
 
     /* close the unnecessary listening sockets */
-
+	//这里是将旧进程使用而新进程没有使用的socket关闭
     ls = old_cycle->listening.elts;
     for (i = 0; i < old_cycle->listening.nelts; i++) {
 

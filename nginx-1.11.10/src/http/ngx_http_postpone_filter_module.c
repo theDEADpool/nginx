@@ -60,6 +60,8 @@ ngx_http_postpone_filter(ngx_http_request_t *r, ngx_chain_t *in)
     ngx_log_debug3(NGX_LOG_DEBUG_HTTP, c->log, 0,
                    "http postpone filter \"%V?%V\" %p", &r->uri, &r->args, in);
 
+	//还没轮到当前请求往out chain发送数据，如果产生了数据，新建一个节点，
+    //将它保存在当前请求的postponed队尾。这样就保证了数据按序发到客户端
     if (r != c->data) {
 
         if (in) {
@@ -85,6 +87,7 @@ ngx_http_postpone_filter(ngx_http_request_t *r, ngx_chain_t *in)
         return NGX_OK;
     }
 
+	//在postpone链表中新建一个节点保存产生的数据in
     if (in) {
         ngx_http_postpone_filter_add(r, in);
     }
@@ -100,6 +103,8 @@ ngx_http_postpone_filter(ngx_http_request_t *r, ngx_chain_t *in)
 
             r->postponed = pr->next;
 
+			//当子请求还有未处理的子请求，必须先处理当前请求的子请求
+			//子请求处理完成之后才能去处理当前子请求的下一个子请求
             c->data = pr->request;
 
             return ngx_http_post_request(pr->request, NULL);

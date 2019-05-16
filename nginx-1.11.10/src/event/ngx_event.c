@@ -643,7 +643,7 @@ ngx_event_process_init(ngx_cycle_t *cycle)
     }
 
 #if !(NGX_WIN32)
-
+	//根据配置的时间更新周期创建一个定时器，定时器触发时间更新，避免每次work进程循环都更新时间
     if (ngx_timer_resolution && !(ngx_event_flags & NGX_USE_TIMER_EVENT)) {
         struct sigaction  sa;
         struct itimerval  itv;

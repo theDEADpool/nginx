@@ -2300,6 +2300,7 @@ ngx_http_finalize_request(ngx_http_request_t *r, ngx_int_t rc)
         return;
     }
 
+	//如果是子请求且有回调，则调用子请求的回调
     if (r != r->main && r->post_subrequest) {
         rc = r->post_subrequest->handler(r, r->post_subrequest->data, rc);
     }
@@ -2350,7 +2351,7 @@ ngx_http_finalize_request(ngx_http_request_t *r, ngx_int_t rc)
     if (r != r->main) {
 
         if (r->buffered || r->postponed) {
-
+			//如果子请求没有执行完成，则设置一个写事件的回调，下次有写事件会触发回调执行
             if (ngx_http_set_write_handler(r) != NGX_OK) {
                 ngx_http_terminate_request(r, 0);
             }
@@ -2360,6 +2361,7 @@ ngx_http_finalize_request(ngx_http_request_t *r, ngx_int_t rc)
 
         pr = r->parent;
 
+		//子请求已经处理完毕，如果它拥有发送数据的权利，则将权利移交给父请求
         if (r == c->data) {
 
             r->main->count--;
@@ -2386,10 +2388,13 @@ ngx_http_finalize_request(ngx_http_request_t *r, ngx_int_t rc)
                 pr->postponed = pr->postponed->next;
             }
 
+			//将发送权利移交给父请求，父请求下次执行的时候会发送它的postponed链表中可以
+            //发送的数据节点，或者将发送权利移交给它的下一个子请求
             c->data = pr;
 
         } else {
-
+			//子请求提前执行完成，且没有数据，重设写事件回调，下次再执行的时候会执行该回调
+			//不过该回调什么也不干，直到轮到该子请求发数据的时候将其从父请求的链表中删除
             ngx_log_debug2(NGX_LOG_DEBUG_HTTP, c->log, 0,
                            "http finalize non-active request: \"%V?%V\"",
                            &r->uri, &r->args);

@@ -345,6 +345,8 @@ main(int argc, char *const *argv)
 
 #endif
 
+	//创建pid文件的作用在于平滑重启的时候新进程可以通过pid文件获取旧进程的pid
+	//然后给pid发送信号
     if (ngx_create_pidfile(&ccf->pid, cycle->log) != NGX_OK) {
         return 1;
     }

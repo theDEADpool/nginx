@@ -446,7 +446,7 @@ ngx_pass_open_channel(ngx_cycle_t *cycle, ngx_channel_t *ch)
                       ngx_processes[i].channel[0]);
 
         /* TODO: NGX_AGAIN */
-
+		//通知子进程打开读通道
         ngx_write_channel(ngx_processes[i].channel[0],
                           ch, sizeof(ngx_channel_t), cycle->log);
     }
@@ -805,6 +805,7 @@ ngx_worker_process_init(ngx_cycle_t *cycle, ngx_int_t worker)
 
     ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->conf_ctx, ngx_core_module);
 
+	//设置子进程优先级
     if (worker >= 0 && ccf->priority != 0) {
         if (setpriority(PRIO_PROCESS, 0, ccf->priority) == -1) {
             ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
@@ -903,6 +904,7 @@ ngx_worker_process_init(ngx_cycle_t *cycle, ngx_int_t worker)
         ls[i].previous = NULL;
     }
 
+	//只有ngx_event_core_module实现了init_process方法，作用是创建epoll对象、定时器等
     for (i = 0; cycle->modules[i]; i++) {
         if (cycle->modules[i]->init_process) {
             if (cycle->modules[i]->init_process(cycle) == NGX_ERROR) {
@@ -926,12 +928,15 @@ ngx_worker_process_init(ngx_cycle_t *cycle, ngx_int_t worker)
             continue;
         }
 
+		//每个work进程都会从master进程集成子进程的数组
+		//所以work进程关闭其他子进程的读端，只使用自己的读端来与master进程通信
         if (close(ngx_processes[n].channel[1]) == -1) {
             ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
                           "close() channel failed");
         }
     }
 
+	//work进程不会向master进程写数据，所以关闭写端
     if (close(ngx_processes[ngx_process_slot].channel[0]) == -1) {
         ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
                       "close() channel failed");
@@ -940,7 +945,7 @@ ngx_worker_process_init(ngx_cycle_t *cycle, ngx_int_t worker)
 #if 0
     ngx_last_process = 0;
 #endif
-
+	//将channel[1]注册到epoll事件中
     if (ngx_add_channel_event(cycle, ngx_channel, NGX_READ_EVENT,
                               ngx_channel_handler)
         == NGX_ERROR)
