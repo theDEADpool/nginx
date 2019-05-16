@@ -218,6 +218,7 @@ ngx_http_write_filter(ngx_http_request_t *r, ngx_chain_t *in)
         return NGX_ERROR;
     }
 
+	//对于限速的处理
     if (r->limit_rate) {
         if (r->limit_rate_after == 0) {
             r->limit_rate_after = clcf->limit_rate_after;
@@ -226,6 +227,7 @@ ngx_http_write_filter(ngx_http_request_t *r, ngx_chain_t *in)
         limit = (off_t) r->limit_rate * (ngx_time() - r->start_sec + 1)
                 - (c->sent - r->limit_rate_after);
 
+		//limit<0表示超发的字节数，所以要延迟发送
         if (limit <= 0) {
             c->write->delayed = 1;
             delay = (ngx_msec_t) (- limit * 1000 / r->limit_rate + 1);
