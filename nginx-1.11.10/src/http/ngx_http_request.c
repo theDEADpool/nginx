@@ -1919,6 +1919,9 @@ ngx_http_process_request(ngx_http_request_t *r)
 	/* 重新设置读写事件的处理方法 */
     c->read->handler = ngx_http_request_handler;
     c->write->handler = ngx_http_request_handler;
+	//重新设置了请求读事件处理函数，对于读事件不再处理
+	//因为此时请求行和请求头已经处理完成，接下来是HTTP十二阶段的处理流程
+	//不需要再读入数据
     r->read_event_handler = ngx_http_block_reading;
 
     ngx_http_handler(r);
