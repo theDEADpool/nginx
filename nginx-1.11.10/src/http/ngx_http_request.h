@@ -433,7 +433,7 @@ struct ngx_http_request_s {
     ngx_http_postponed_request_t     *postponed;
     ngx_http_post_subrequest_t       *post_subrequest;
 
-	/* 保存子请求的链表 */
+	/* 保存子请求的链表,仅对原始请求有效，子请求这个字段为NULL */
     ngx_http_posted_request_t        *posted_requests;
 
     ngx_int_t                         phase_handler;

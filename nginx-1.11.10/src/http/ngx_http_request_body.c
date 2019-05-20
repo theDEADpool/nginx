@@ -549,6 +549,7 @@ ngx_http_discard_request_body(ngx_http_request_t *r)
         ngx_del_timer(rev);
     }
 
+	//content_length_n <= 0 表示没有包体需要丢弃
     if (r->headers_in.content_length_n <= 0 && !r->headers_in.chunked) {
         return NGX_OK;
     }
@@ -570,6 +571,7 @@ ngx_http_discard_request_body(ngx_http_request_t *r)
     rc = ngx_http_read_discarded_request_body(r);
 
     if (rc == NGX_OK) {
+		//包体已经全部丢弃了就不需要lingering_close了
         r->lingering_close = 0;
         return NGX_OK;
     }
@@ -586,6 +588,7 @@ ngx_http_discard_request_body(ngx_http_request_t *r)
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
+	//count++是防止在包体没有被接收完之前，其他事件销毁了该http请求
     r->count++;
     r->discard_body = 1;
 
@@ -593,6 +596,7 @@ ngx_http_discard_request_body(ngx_http_request_t *r)
 }
 
 
+//一次丢弃包体的操作没有将包体完全丢弃，后续继续接收和丢弃包体的行为由该函数实现
 void
 ngx_http_discarded_request_body_handler(ngx_http_request_t *r)
 {
@@ -612,6 +616,7 @@ ngx_http_discarded_request_body_handler(ngx_http_request_t *r)
         return;
     }
 
+	//设置一个超时总时间，如果超过这个时间丢弃还没有完成则直接关闭本次http请求
     if (r->lingering_time) {
         timer = (ngx_msec_t) r->lingering_time - (ngx_msec_t) ngx_time();
 
@@ -664,6 +669,7 @@ ngx_http_discarded_request_body_handler(ngx_http_request_t *r)
 }
 
 
+//所谓丢弃包体，就是将包体数据从内核接收，但是不交给handler模块处理
 static ngx_int_t
 ngx_http_read_discarded_request_body(ngx_http_request_t *r)
 {
