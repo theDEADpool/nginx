@@ -2513,6 +2513,7 @@ ngx_http_subrequest(ngx_http_request_t *r,
     sr->stream = r->stream;
 #endif
 
+	//子请求只能是GET方法
     sr->method = NGX_HTTP_GET;
     sr->http_version = r->http_version;
 
@@ -2542,6 +2543,7 @@ ngx_http_subrequest(ngx_http_request_t *r,
     sr->write_event_handler = ngx_http_handler;
 
     if (c->data == r && r->postponed == NULL) {
+		//这个data指向的就是第一个要需要给客户端响应数据的请求
         c->data = sr;
     }
 

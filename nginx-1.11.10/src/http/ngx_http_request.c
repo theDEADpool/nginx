@@ -1926,6 +1926,7 @@ ngx_http_process_request(ngx_http_request_t *r)
 
     ngx_http_handler(r);
 
+	//处理所有子请求
     ngx_http_run_posted_requests(c);
 }
 
@@ -2251,6 +2252,7 @@ ngx_http_run_posted_requests(ngx_connection_t *c)
 }
 
 
+//将子请求加入原始请求postponed链表末尾，这样原始请求就知道了所有子请求，包括子请求的子请求
 ngx_int_t
 ngx_http_post_request(ngx_http_request_t *r, ngx_http_posted_request_t *pr)
 {
@@ -2297,6 +2299,8 @@ ngx_http_finalize_request(ngx_http_request_t *r, ngx_int_t rc)
     }
 
     if (rc == NGX_DECLINED) {
+		//这里把content_handler设置为空之后，重新调用core_run_phases
+		//就可以去执行其他模块通过main_conf中phase数组定义的处理方法
         r->content_handler = NULL;
         r->write_event_handler = ngx_http_core_run_phases;
         ngx_http_core_run_phases(r);
@@ -2542,7 +2546,7 @@ ngx_http_finalize_connection(ngx_http_request_t *r)
     clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
     if (r->main->count != 1) {
-
+		//引用计数不为1的时候，判断是否在丢弃包体的流程中，如果是，则设置一个总超时时间lingering_time
         if (r->discard_body) {
             r->read_event_handler = ngx_http_discarded_request_body_handler;
             ngx_add_timer(r->connection->read, clcf->lingering_timeout);
@@ -2562,6 +2566,7 @@ ngx_http_finalize_connection(ngx_http_request_t *r)
         r->lingering_close = 1;
     }
 
+	//设置了keepalive则只释放http请求，但不关闭tcp连接
     if (!ngx_terminate
          && !ngx_exiting
          && r->keepalive
