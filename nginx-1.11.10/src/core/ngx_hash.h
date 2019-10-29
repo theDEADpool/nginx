@@ -14,9 +14,9 @@
 
 
 typedef struct {
-    void             *value;
-    u_short           len;
-    u_char            name[1];
+    void             *value;	//kv键值对中的value
+    u_short           len;	//key的长度
+    u_char            name[1];	//kv键值对中的key，变长数组
 } ngx_hash_elt_t;
 
 
