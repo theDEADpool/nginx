@@ -273,7 +273,7 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
     }
 
     for (n = 0; n < nelts; n++) {
-		//这里要加上sizeof(void *)是因为每个桶都是以一个NULL指针结尾
+        //这里要加上sizeof(void *)是因为每个桶都是以一个NULL指针结尾
         if (hinit->bucket_size < NGX_HASH_ELT_SIZE(&names[n]) + sizeof(void *))
         {
             ngx_log_error(NGX_LOG_EMERG, hinit->pool->log, 0,
@@ -284,20 +284,20 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
         }
     }
 
-	//max_size是哈希桶的最大个数，根据这个先预分配一块内存
+    //max_size是哈希桶的最大个数，根据这个先预分配一块内存
     test = ngx_alloc(hinit->max_size * sizeof(u_short), hinit->pool->log);
     if (test == NULL) {
         return NGX_ERROR;
     }
 
-	//由于哈希桶是以NULL指针结尾的，这里bucket_size减去NULL指针的大小，就得到实际可以用来存放数据的空间大小
+    //由于哈希桶是以NULL指针结尾的，这里bucket_size减去NULL指针的大小，就得到实际可以用来存放数据的空间大小
     bucket_size = hinit->bucket_size - sizeof(void *);
 
-	/*
-	2 * sizeof(void *)，根据上面的字节对齐，一个ngx_hash_elt_t结构最小也要2个指针大小。因为是以sizeof(void *)对齐的。
-	(bucket_size / (2 * sizeof(void *)))算出每个哈希桶最多可以存放多少个ngx_hash_elt_t。
-	最终start就表示要存下所有的键值对，最少需要多少个哈希桶。
-	*/
+    /*
+    2 * sizeof(void *)，根据上面的字节对齐，一个ngx_hash_elt_t结构最小也要2个指针大小。因为是以sizeof(void *)对齐的。
+    (bucket_size / (2 * sizeof(void *)))算出每个哈希桶最多可以存放多少个ngx_hash_elt_t。
+    最终start就表示要存下所有的键值对，最少需要多少个哈希桶。
+    */
     start = nelts / (bucket_size / (2 * sizeof(void *)));
     start = start ? start : 1;
 
@@ -305,11 +305,11 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
         start = hinit->max_size - 1000;
     }
 
-	/*
-	start是理论上存储所有键值对所需要的哈希桶数量的最小值。但实际需要的哈希桶数量往往都会比理论值最小值大。
-	下面这个循环就是找到能够保存所有键值对的哈希桶的数量。给start设定一个初始值就是避免start从一个很小的值开始递增，
-	减少循环执行的时间。
-	*/
+    /*
+    start是理论上存储所有键值对所需要的哈希桶数量的最小值。但实际需要的哈希桶数量往往都会比理论值最小值大。
+    下面这个循环就是找到能够保存所有键值对的哈希桶的数量。给start设定一个初始值就是避免start从一个很小的值开始递增，
+    减少循环执行的时间。
+    */
     for (size = start; size <= hinit->max_size; size++) {
 
         ngx_memzero(test, size * sizeof(u_short));
@@ -319,14 +319,14 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
                 continue;
             }
 
-			/*
-			key表示第n个键值对被哈希之后对应的数组下标
-			test[key]表示当前下标要保存的键值对的总大小
-			因为哈希之后元素是存在冲突的，一个下标中可能要保存多个键值对，
-			因此需要计算出，在size所表示的哈希桶数量的条件下，每个哈希桶最多需要存储的键值对大小
-			然后判断需要存储的键值对大小是否超过了单个哈希桶的容量
-			超过单个哈希桶的容量之后就需要扩大哈希桶的数量
-			*/
+            /*
+            key表示第n个键值对被哈希之后对应的数组下标
+            test[key]表示当前下标要保存的键值对的总大小
+            因为哈希之后元素是存在冲突的，一个下标中可能要保存多个键值对，
+            因此需要计算出，在size所表示的哈希桶数量的条件下，每个哈希桶最多需要存储的键值对大小
+            然后判断需要存储的键值对大小是否超过了单个哈希桶的容量
+            超过单个哈希桶的容量之后就需要扩大哈希桶的数量
+            */
             key = names[n].key_hash % size;
             test[key] = (u_short) (test[key] + NGX_HASH_ELT_SIZE(&names[n]));
 
@@ -348,7 +348,7 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
         continue;
     }
 
-	//代码走到这里就表示即使用预设的最大哈希桶数量，也无法保存所有的键值对
+    //代码走到这里就表示即使用预设的最大哈希桶数量，也无法保存所有的键值对
     size = hinit->max_size;
 
     ngx_log_error(NGX_LOG_WARN, hinit->pool->log, 0,
@@ -360,14 +360,14 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
 
 found:
 
-	//到这就是找到了能够保存所有键值对的哈希桶数量
-	//先初始化test数组的每个成员为一个指针的大小
+    //到这就是找到了能够保存所有键值对的哈希桶数量
+    //先初始化test数组的每个成员为一个指针的大小
     for (i = 0; i < size; i++) {
         test[i] = sizeof(void *);
     }
 
-	//然后计算test数组每个成员保存所有键值对之后的最终大小
-	//test数组中每个成员的下标和最终哈希表中每个成员对应的哈希桶是一样的
+    //然后计算test数组每个成员保存所有键值对之后的最终大小
+    //test数组中每个成员的下标和最终哈希表中每个成员对应的哈希桶是一样的
     for (n = 0; n < nelts; n++) {
         if (names[n].key.data == NULL) {
             continue;
@@ -377,7 +377,7 @@ found:
         test[key] = (u_short) (test[key] + NGX_HASH_ELT_SIZE(&names[n]));
     }
 
-	//len保存所有哈希桶所需要的总内存
+    //len保存所有哈希桶所需要的总内存
     len = 0;
 
     for (i = 0; i < size; i++) {
@@ -391,7 +391,7 @@ found:
     }
 
     if (hinit->hash == NULL) {
-		//ngx_hash_wildcard_t使用来设置前置或者后置通配符
+        //ngx_hash_wildcard_t使用来设置前置或者后置通配符
         hinit->hash = ngx_pcalloc(hinit->pool, sizeof(ngx_hash_wildcard_t)
                                              + size * sizeof(ngx_hash_elt_t *));
         if (hinit->hash == NULL) {
@@ -403,7 +403,7 @@ found:
                       ((u_char *) hinit->hash + sizeof(ngx_hash_wildcard_t));
 
     } else {
-		//大部分哈希表在调用初始化之前都会给hinit->hash复制，因此会进入这个流程
+        //大部分哈希表在调用初始化之前都会给hinit->hash复制，因此会进入这个流程
         buckets = ngx_pcalloc(hinit->pool, size * sizeof(ngx_hash_elt_t *));
         if (buckets == NULL) {
             ngx_free(test);
@@ -424,18 +424,18 @@ found:
             continue;
         }
 
-		//为每个哈希桶分配所需要的内存，test数组中记录了每个哈希桶所需要内存的大小
+        //为每个哈希桶分配所需要的内存，test数组中记录了每个哈希桶所需要内存的大小
         buckets[i] = (ngx_hash_elt_t *) elts;
         elts += test[i];
     }
 
-	//重置了test数组，为下面将键值对加入哈希桶做准备
+    //重置了test数组，为下面将键值对加入哈希桶做准备
     for (i = 0; i < size; i++) {
         test[i] = 0;
     }
 
-	//将所有的键值对存入哈希表中
-	//循环里test数组记录了每个哈希桶已使用内存的偏移量
+    //将所有的键值对存入哈希表中
+    //循环里test数组记录了每个哈希桶已使用内存的偏移量
     for (n = 0; n < nelts; n++) {
         if (names[n].key.data == NULL) {
             continue;
@@ -452,7 +452,7 @@ found:
         test[key] = (u_short) (test[key] + NGX_HASH_ELT_SIZE(&names[n]));
     }
 
-	//为每个保存了键值对的哈希桶末尾加上一个值为NULL的成员，表示结束
+    //为每个保存了键值对的哈希桶末尾加上一个值为NULL的成员，表示结束
     for (i = 0; i < size; i++) {
         if (buckets[i] == NULL) {
             continue;
