@@ -391,6 +391,7 @@ found:
     }
 
     if (hinit->hash == NULL) {
+		//ngx_hash_wildcard_t使用来设置前置或者后置通配符
         hinit->hash = ngx_pcalloc(hinit->pool, sizeof(ngx_hash_wildcard_t)
                                              + size * sizeof(ngx_hash_elt_t *));
         if (hinit->hash == NULL) {
@@ -402,6 +403,7 @@ found:
                       ((u_char *) hinit->hash + sizeof(ngx_hash_wildcard_t));
 
     } else {
+		//大部分哈希表在调用初始化之前都会给hinit->hash复制，因此会进入这个流程
         buckets = ngx_pcalloc(hinit->pool, size * sizeof(ngx_hash_elt_t *));
         if (buckets == NULL) {
             ngx_free(test);
@@ -422,14 +424,18 @@ found:
             continue;
         }
 
+		//为每个哈希桶分配所需要的内存，test数组中记录了每个哈希桶所需要内存的大小
         buckets[i] = (ngx_hash_elt_t *) elts;
         elts += test[i];
     }
 
+	//重置了test数组，为下面将键值对加入哈希桶做准备
     for (i = 0; i < size; i++) {
         test[i] = 0;
     }
 
+	//将所有的键值对存入哈希表中
+	//循环里test数组记录了每个哈希桶已使用内存的偏移量
     for (n = 0; n < nelts; n++) {
         if (names[n].key.data == NULL) {
             continue;
@@ -446,6 +452,7 @@ found:
         test[key] = (u_short) (test[key] + NGX_HASH_ELT_SIZE(&names[n]));
     }
 
+	//为每个保存了键值对的哈希桶末尾加上一个值为NULL的成员，表示结束
     for (i = 0; i < size; i++) {
         if (buckets[i] == NULL) {
             continue;
