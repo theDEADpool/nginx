@@ -228,6 +228,11 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
         module = cycle->modules[i]->ctx;
 
+        /*
+        并非所有的NGX_CORE_MODULE都定义了create_conf方法
+        对于没有定义create_conf方法，conf_ctx成员的赋值是在配置解析的时候
+        比如ngx_http_module是在ngx_http_block函数中
+        */
         if (module->create_conf) {
             rv = module->create_conf(cycle);
             if (rv == NULL) {
