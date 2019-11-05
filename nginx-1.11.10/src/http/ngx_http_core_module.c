@@ -2992,7 +2992,7 @@ ngx_http_core_server(ngx_conf_t *cf, ngx_command_t *cmd, void *dummy)
 
 
     /* parse inside server{} */
-
+    //接下来要解析的就是NGX_HTTP_SRV_CONF类型的配置
     pcf = *cf;
     cf->ctx = ctx;
     cf->cmd_type = NGX_HTTP_SRV_CONF;

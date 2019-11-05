@@ -48,6 +48,7 @@ ngx_read_file(ngx_file_t *file, u_char *buf, size_t size, off_t offset)
 #else
 
     if (file->sys_offset != offset) {
+        //这里SEEK_SET表示每次从文件头部偏移offset长度
         if (lseek(file->fd, offset, SEEK_SET) == -1) {
             ngx_log_error(NGX_LOG_CRIT, file->log, ngx_errno,
                           "lseek() \"%s\" failed", file->name.data);

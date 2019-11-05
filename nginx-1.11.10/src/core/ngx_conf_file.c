@@ -287,7 +287,7 @@ ngx_conf_parse(ngx_conf_t *cf, ngx_str_t *filename)
         }
 
         /* rc == NGX_OK || rc == NGX_CONF_BLOCK_START */
-
+        //只有小部分配置项设置了自定义的handler方法，设置了这个方法就不会调用ngx_conf_handler解析配置项
         if (cf->handler) {
 
             /*
@@ -512,6 +512,7 @@ ngx_conf_read_token(ngx_conf_t *cf)
     ngx_buf_t   *b, *dump;
 
     found = 0;
+    //need_space为1的时候表示期待某个特定的分隔符，比如另一半的双引号、单引号这种
     need_space = 0;
     last_space = 1;
     sharp_comment = 0;
@@ -554,6 +555,7 @@ ngx_conf_read_token(ngx_conf_t *cf)
 
             len = b->pos - start;
 
+            //满足len == NGX_CONF_BUFFER说明buf已经用完，意味着某一行的配置太长，无法正确解析
             if (len == NGX_CONF_BUFFER) {
                 cf->conf_file->line = start_line;
 
@@ -580,6 +582,7 @@ ngx_conf_read_token(ngx_conf_t *cf)
                 ngx_memmove(b->start, start, len);
             }
 
+            //这里size的处理是要计算接下来需要从配置文件中读取数据的大小
             size = (ssize_t) (file_size - cf->conf_file->file.offset);
 
             if (size > b->end - (b->start + len)) {
@@ -601,6 +604,8 @@ ngx_conf_read_token(ngx_conf_t *cf)
                 return NGX_ERROR;
             }
 
+            //pos指向尚未处理的配置数据的起始位置
+            //last指向尚未处理的配置数据的结束位置
             b->pos = b->start + len;
             b->last = b->pos + n;
             start = b->start;
@@ -751,6 +756,8 @@ ngx_conf_read_token(ngx_conf_t *cf)
                 found = 1;
             }
 
+            //found为1的时候，表示找到了一段完整的配置数据，不是完整的配置项，而是某个配置项中的部分配置数据
+            //比如配置项的名字，配置项的第一个参数，第二个参数等
             if (found) {
                 word = ngx_array_push(cf->args);
                 if (word == NULL) {
