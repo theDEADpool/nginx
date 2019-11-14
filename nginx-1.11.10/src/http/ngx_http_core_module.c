@@ -2983,6 +2983,14 @@ ngx_http_core_server(ngx_conf_t *cf, ngx_command_t *cmd, void *dummy)
 
     cmcf = ctx->main_conf[ngx_http_core_module.ctx_index];
 
+    /*
+    cscf是本次创建的ctx中ngx_http_core_module在srv_conf中对应的成员。
+    cmcf是本次创建的ctx中ngx_http_core_module在main_conf中对应的成员。
+    但本次创建的ctx的main_conf实际上是指向ngx_http_block中创建的ctx的main_conf。
+    下面的数组操作实际上就是将本次创建的ctx中ngx_http_core_module在srv_conf中对应的成员
+    加入了ngx_http_block创建的ctx中ngx_http_core_module在main_conf中对应的成员的server数组中，
+    这样就把server和main配置对应关系建立了。
+    */
     cscfp = ngx_array_push(&cmcf->servers);
     if (cscfp == NULL) {
         return NGX_CONF_ERROR;

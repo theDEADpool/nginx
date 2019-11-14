@@ -584,12 +584,17 @@ ngx_http_merge_servers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
     saved = *ctx;
     rv = NGX_CONF_OK;
 
+    /*
+    cscfp[s]是ngx_http_core_module在各个server配置ctx->srv_conf中对应的成员。
+    cscfp[s]->ctx是各个server配置块对应的ngx_http_conf_t的数据结构。
+    */
     for (s = 0; s < cmcf->servers.nelts; s++) {
 
         /* merge the server{}s' srv_conf's */
 
         ctx->srv_conf = cscfp[s]->ctx->srv_conf;
 
+        //合并main和srv的配置，由每个模块决定是使用main的配置还是srv的配置
         if (module->merge_srv_conf) {
             rv = module->merge_srv_conf(cf, saved.srv_conf[ctx_index],
                                         cscfp[s]->ctx->srv_conf[ctx_index]);
@@ -598,6 +603,7 @@ ngx_http_merge_servers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
             }
         }
 
+        //与上面相同，main配置也可以对srv中的loc配置生效
         if (module->merge_loc_conf) {
 
             /* merge the server{}'s loc_conf */
