@@ -30,6 +30,8 @@ ngx_event_process_posted(ngx_cycle_t *cycle, ngx_queue_t *posted)
 
         ngx_delete_posted_event(ev);
 
+        //如果传入的是ngx_posted_accept_events，handler就是ngx_event_accept
+        //在ngx_event_process_init赋值
         ev->handler(ev);
     }
 }
