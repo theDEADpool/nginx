@@ -350,6 +350,7 @@ ngx_epoll_init(ngx_cycle_t *cycle, ngx_msec_t timer)
 #endif
     }
 
+    //第一次执行会进入这个分支，创建event_list数组
     if (nevents < epcf->events) {
         if (event_list) {
             ngx_free(event_list);
@@ -363,9 +364,9 @@ ngx_epoll_init(ngx_cycle_t *cycle, ngx_msec_t timer)
     }
 
     nevents = epcf->events;
-
+    //ngx_os_io是针对unix操作系统实现的一系列socket相关的读写等方法
     ngx_io = ngx_os_io;
-
+    //actions是epoll模块实现的对于事件的处理函数，包括add、del等
     ngx_event_actions = ngx_epoll_module_ctx.actions;
 
 #if (NGX_HAVE_CLEAR_EVENT)
